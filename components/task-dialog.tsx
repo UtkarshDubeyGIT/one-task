@@ -5,7 +5,8 @@ import { CalendarRange, Check, Plus, Trash2 } from "lucide-react";
 
 import { LABELS, type LabelKind } from "@/lib/types";
 import { usePlanner } from "@/lib/store";
-import { addDaysISO, compareISO, eachDayISO, todayISO } from "@/lib/date";
+import { addDaysISO, compareISO, todayISO } from "@/lib/date";
+import { distributeDates } from "@/lib/planning";
 import { labelMeta } from "@/lib/colors";
 import { cn, uid } from "@/lib/utils";
 import {
@@ -30,17 +31,12 @@ interface Draft {
 }
 
 function spreadDrafts(count: number, deadline: string): Draft[] {
-  const start = compareISO(todayISO(), deadline) > 0 ? deadline : todayISO();
-  const days = eachDayISO(start, deadline);
-  if (days.length === 0) return [];
-  const n = Math.max(1, Math.min(count, 60));
-  const out: Draft[] = [];
-  for (let i = 0; i < n; i++) {
-    const idx =
-      n === 1 ? days.length - 1 : Math.round((i * (days.length - 1)) / (n - 1));
-    out.push({ key: uid("d"), title: "", date: days[idx], done: false });
-  }
-  return out;
+  return distributeDates(todayISO(), deadline, count).map((date) => ({
+    key: uid("d"),
+    title: "",
+    date,
+    done: false,
+  }));
 }
 
 export function TaskDialog({

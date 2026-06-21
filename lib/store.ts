@@ -4,7 +4,8 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import type { Area, AreaColor, AreaFilter, ID, LabelKind, Milestone, Task } from "./types";
-import { compareISO, eachDayISO, todayISO } from "./date";
+import { todayISO } from "./date";
+import { distributeDates } from "./planning";
 import { defaultAreas, makeSeed } from "./seed";
 import { uid } from "./utils";
 
@@ -187,38 +188,31 @@ export const usePlanner = create<PlannerState>()(
         const task = state.tasks.find((t) => t.id === taskId);
         if (!task) return;
 
-        const requestedStart = opts.startDate ?? todayISO();
-        const start =
-          compareISO(requestedStart, task.deadline) > 0
-            ? task.deadline
-            : requestedStart;
-        const days = eachDayISO(start, task.deadline);
-        if (days.length === 0) return;
-
         const titles =
           opts.titles && opts.titles.length > 0 ? opts.titles : null;
-        const n = titles
-          ? titles.length
-          : Math.max(1, Math.min(opts.count ?? Math.min(4, days.length), 90));
+        const n = titles ? titles.length : Math.max(1, opts.count ?? 4);
+        const dates = distributeDates(
+          opts.startDate ?? todayISO(),
+          task.deadline,
+          n,
+        );
+        if (dates.length === 0) return;
 
         const existing = state.milestones.filter(
           (m) => m.taskId === taskId,
         ).length;
         const now = new Date().toISOString();
-        const created: Milestone[] = [];
-        for (let i = 0; i < n; i++) {
-          const dayIdx =
-            n === 1 ? days.length - 1 : Math.round((i * (days.length - 1)) / (n - 1));
-          created.push({
-            id: uid("m"),
-            taskId,
-            title: titles ? titles[i].trim() || `Milestone ${i + 1}` : `Milestone ${i + 1}`,
-            date: days[dayIdx],
-            done: false,
-            order: existing + i,
-            createdAt: now,
-          });
-        }
+        const created: Milestone[] = dates.map((date, i) => ({
+          id: uid("m"),
+          taskId,
+          title: titles
+            ? titles[i].trim() || `Milestone ${i + 1}`
+            : `Milestone ${i + 1}`,
+          date,
+          done: false,
+          order: existing + i,
+          createdAt: now,
+        }));
         set((s) => ({ milestones: [...s.milestones, ...created] }));
       },
 
