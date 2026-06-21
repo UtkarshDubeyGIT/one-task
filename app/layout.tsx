@@ -26,7 +26,7 @@ const fontVariables = [
 ].join(" ");
 
 export const metadata: Metadata = {
-  title: "one task — deadline-first task manager",
+  title: "one task",
   description:
     "Break tasks into daily milestones, map them across your week, and always know what to work on next.",
   applicationName: "one task",
