@@ -142,4 +142,26 @@ describe("planner store", () => {
       addDaysISO(todayISO(), 2),
     );
   });
+
+  it("replaceAll swaps the entire dataset (used by cloud sync)", () => {
+    s().replaceAll({
+      areas: [{ id: "a", name: "A", color: "indigo" }],
+      labels: [{ id: "l", name: "x", color: "rose" }],
+      tasks: [
+        {
+          id: "t",
+          title: "T",
+          areaId: "a",
+          deadline: todayISO(),
+          labelIds: ["l"],
+          createdAt: "2026-01-01T00:00:00.000Z",
+        },
+      ],
+      milestones: [],
+    });
+    expect(s().areas.map((a) => a.id)).toEqual(["a"]);
+    expect(s().labels.map((l) => l.id)).toEqual(["l"]);
+    expect(s().tasks).toHaveLength(1);
+    expect(s().milestones).toHaveLength(0);
+  });
 });

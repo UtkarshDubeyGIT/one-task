@@ -6,6 +6,7 @@ import { Menu, Plus, X } from "lucide-react";
 
 import { usePlanner } from "@/lib/store";
 import { Sidebar } from "./sidebar";
+import { SyncManager } from "./sync-manager";
 import { TaskDialogProvider, useTaskDialog } from "./app-providers";
 import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/unlumen/kbd";
@@ -79,6 +80,7 @@ function Shell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen bg-background">
+      <SyncManager />
       <aside className="hidden w-64 shrink-0 border-r bg-card/30 lg:block">
         <div className="sticky top-0 h-screen overflow-y-auto scrollbar-thin">
           <Sidebar />

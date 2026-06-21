@@ -3,7 +3,17 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-import type { Area, AreaColor, AreaFilter, ID, Label, Milestone, Task } from "./types";
+import type {
+  Area,
+  AreaColor,
+  AreaFilter,
+  ID,
+  Label,
+  Milestone,
+  Snapshot,
+  SyncStatus,
+  Task,
+} from "./types";
 import { todayISO } from "./date";
 import { distributeDates } from "./planning";
 import { defaultAreas, defaultLabels, makeSeed } from "./seed";
@@ -37,8 +47,11 @@ interface PersistedSlice {
 
 export interface PlannerState extends PersistedSlice {
   hasHydrated: boolean;
+  syncStatus: SyncStatus;
 
   setHasHydrated: (v: boolean) => void;
+  setSyncStatus: (status: SyncStatus) => void;
+  replaceAll: (snapshot: Snapshot) => void;
   setActiveArea: (id: AreaFilter) => void;
   toggleLabelFilter: (labelId: ID) => void;
   clearFilters: () => void;
@@ -97,8 +110,17 @@ export const usePlanner = create<PlannerState>()(
     (set, get) => ({
       ...buildInitial(),
       hasHydrated: false,
+      syncStatus: "idle",
 
       setHasHydrated: (v) => set({ hasHydrated: v }),
+      setSyncStatus: (status) => set({ syncStatus: status }),
+      replaceAll: (snapshot) =>
+        set({
+          areas: snapshot.areas,
+          labels: snapshot.labels,
+          tasks: snapshot.tasks,
+          milestones: snapshot.milestones,
+        }),
       setActiveArea: (id) => set({ activeAreaId: id }),
       toggleLabelFilter: (labelId) =>
         set((s) => ({

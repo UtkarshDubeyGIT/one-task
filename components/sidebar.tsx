@@ -16,6 +16,7 @@ import { labelChipClass } from "@/lib/colors";
 import { cn } from "@/lib/utils";
 import { AreaDot } from "./area-dot";
 import { ManageDialog } from "./manage-dialog";
+import { SyncStatus } from "./sync-status";
 import { ThemeToggle } from "./theme-toggle";
 
 const NAV = [
@@ -169,16 +170,21 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         </div>
       </div>
 
-      <div className="mt-auto flex items-center justify-between gap-2 px-1 pt-3">
-        <button
-          type="button"
-          onClick={() => setManageOpen(true)}
-          className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground"
-        >
-          <Settings2 className="size-4" />
-          Areas &amp; labels
-        </button>
-        <ThemeToggle />
+      <div className="mt-auto flex flex-col gap-1.5 pt-3">
+        <div className="px-2">
+          <SyncStatus />
+        </div>
+        <div className="flex items-center justify-between gap-2 px-1">
+          <button
+            type="button"
+            onClick={() => setManageOpen(true)}
+            className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground"
+          >
+            <Settings2 className="size-4" />
+            Areas &amp; labels
+          </button>
+          <ThemeToggle />
+        </div>
       </div>
 
       <ManageDialog open={manageOpen} onOpenChange={setManageOpen} />

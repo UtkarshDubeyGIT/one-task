@@ -93,12 +93,29 @@ npx shadcn@latest add button dialog        # official shadcn primitives
 npx shadcn@latest add @unlumen-ui/command-menu   # more unlumen components
 ```
 
-### Persistence & future sync
+### Persistence & cloud sync
 
-State lives in `localStorage` today, but every read/write goes through the
-Zustand store's actions and a single storage adapter in `lib/store.ts`. Adding
-cloud sync later means swapping that adapter and wrapping the actions in API
-calls — the components never touch storage directly.
+State is cached in `localStorage` and, when a database is configured, synced to
+a small Vercel KV (Upstash Redis) store as a single JSON snapshot — so your
+tasks follow you across devices. With no database, the app runs
+localStorage-only and the sidebar shows **"Local only"**.
+
+**Enable cloud sync (optional, ~4 clicks):**
+
+1. Vercel dashboard → your project → **Storage** → **Create Database** →
+   **Upstash for Redis** (KV).
+2. Connect it to the project — Vercel injects `KV_REST_API_URL` /
+   `KV_REST_API_TOKEN` (Upstash `UPSTASH_REDIS_REST_*` names also work).
+3. **Redeploy.** The sidebar dot turns **Synced**, and your data now loads from
+   the cloud on any device.
+
+Sync is last-write-wins — built for one person across devices, not simultaneous
+multi-device editing. It's a single shared store with **no login**, so protect
+the deployment with Vercel password protection (or add app auth) if it holds
+anything sensitive.
+
+Server read/write lives in `app/api/state/route.ts`; the client bridge is
+`components/sync-manager.tsx`.
 
 ## License
 

@@ -63,3 +63,13 @@ export interface Milestone {
 export type AreaFilter = ID | "all";
 
 export type ViewKey = "next" | "timeline" | "board" | "planning";
+
+/** The full persisted dataset, synced to the cloud KV store as one JSON value. */
+export interface Snapshot {
+  areas: Area[];
+  labels: Label[];
+  tasks: Task[];
+  milestones: Milestone[];
+}
+
+export type SyncStatus = "idle" | "syncing" | "synced" | "local";
