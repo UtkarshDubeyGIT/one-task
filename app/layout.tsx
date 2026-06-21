@@ -4,9 +4,15 @@ import "./globals.css";
 import { AppShell } from "@/components/app-shell";
 
 export const metadata: Metadata = {
-  title: "Deadline — deadline-first task manager",
+  title: "one task — deadline-first task manager",
   description:
     "Break tasks into daily milestones, map them across your week, and always know what to work on next.",
+  applicationName: "one task",
+  appleWebApp: {
+    capable: true,
+    title: "one task",
+    statusBarStyle: "black-translucent",
+  },
 };
 
 // Set the theme class before paint to avoid a flash. Defaults to dark.

@@ -54,12 +54,13 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="flex h-full flex-col gap-1 p-3">
       <div className="flex items-center gap-2 px-2 py-2">
-        <div className="flex size-7 items-center justify-center rounded-md bg-primary/15 text-primary">
-          <Sparkles className="size-4" />
-        </div>
-        <div className="text-sm font-semibold tracking-tight">
-          Deadline<span className="text-primary">.</span>
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/logo.png"
+          alt="one task logo"
+          className="size-7 rounded-md"
+        />
+        <div className="text-sm font-semibold tracking-tight">one task</div>
       </div>
 
       <nav className="flex flex-col gap-0.5">
