@@ -5,7 +5,7 @@ import * as React from "react";
 import { TaskDialog } from "./task-dialog";
 
 interface TaskDialogContextValue {
-  openCreate: () => void;
+  openCreate: (opts?: { deadline?: string }) => void;
   openEdit: (taskId: string) => void;
 }
 
@@ -28,9 +28,13 @@ export function TaskDialogProvider({
 }) {
   const [open, setOpen] = React.useState(false);
   const [taskId, setTaskId] = React.useState<string | null>(null);
+  const [createDeadline, setCreateDeadline] = React.useState<
+    string | undefined
+  >(undefined);
 
-  const openCreate = React.useCallback(() => {
+  const openCreate = React.useCallback((opts?: { deadline?: string }) => {
     setTaskId(null);
+    setCreateDeadline(opts?.deadline);
     setOpen(true);
   }, []);
   const openEdit = React.useCallback((id: string) => {
@@ -46,7 +50,12 @@ export function TaskDialogProvider({
   return (
     <TaskDialogContext.Provider value={value}>
       {children}
-      <TaskDialog open={open} onOpenChange={setOpen} taskId={taskId} />
+      <TaskDialog
+        open={open}
+        onOpenChange={setOpen}
+        taskId={taskId}
+        defaultDeadline={createDeadline}
+      />
     </TaskDialogContext.Provider>
   );
 }

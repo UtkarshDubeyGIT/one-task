@@ -113,6 +113,8 @@ export const usePlanner = create<PlannerState>()(
         })),
       removeArea: (id) =>
         set((s) => {
+          // Never remove the last area — tasks always need a home.
+          if (s.areas.length <= 1) return s;
           const taskIds = new Set(
             s.tasks.filter((t) => t.areaId === id).map((t) => t.id),
           );

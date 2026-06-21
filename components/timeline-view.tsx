@@ -85,7 +85,7 @@ export function TimelineView() {
             views={items}
             onToggle={toggleMilestone}
             onOpen={openEdit}
-            onAdd={() => openCreate()}
+            onAdd={(day) => openCreate({ deadline: day })}
             className="md:w-[calc(50%-0.375rem)] lg:w-60 lg:shrink-0"
           />
         ))}

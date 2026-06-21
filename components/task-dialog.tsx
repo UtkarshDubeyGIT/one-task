@@ -43,10 +43,12 @@ export function TaskDialog({
   open,
   onOpenChange,
   taskId,
+  defaultDeadline,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   taskId?: string | null;
+  defaultDeadline?: string;
 }) {
   const areas = usePlanner((s) => s.areas);
   const tasks = usePlanner((s) => s.tasks);
@@ -104,7 +106,7 @@ export function TaskDialog({
     } else {
       setTitle("");
       setAreaId(activeAreaId !== "all" ? activeAreaId : areas[0]?.id ?? "");
-      setDeadline(addDaysISO(todayISO(), 7));
+      setDeadline(defaultDeadline ?? addDaysISO(todayISO(), 7));
       setLabels([]);
       setNotes("");
       setDrafts([]);
