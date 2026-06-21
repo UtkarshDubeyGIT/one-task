@@ -106,3 +106,25 @@ export function relativeDeadline(iso: string): string {
   if (d < 14) return "next week";
   return `in ${Math.round(d / 7)}w`;
 }
+
+/** First day of the month containing iso, as yyyy-MM-01. */
+export function startOfMonthISO(iso: string): string {
+  return `${iso.slice(0, 7)}-01`;
+}
+
+/** Shift by whole months; returns the first day of the resulting month. */
+export function addMonthsISO(iso: string, n: number): string {
+  const [y, m] = iso.split("-").map(Number);
+  const total = y * 12 + (m - 1) + n;
+  const ny = Math.floor(total / 12);
+  const nm = (total % 12) + 1;
+  return `${ny}-${String(nm).padStart(2, "0")}-01`;
+}
+
+export function formatMonthYear(iso: string): string {
+  return format(parseISODate(iso), "MMMM yyyy");
+}
+
+export function sameMonthISO(a: string, b: string): boolean {
+  return a.slice(0, 7) === b.slice(0, 7);
+}
