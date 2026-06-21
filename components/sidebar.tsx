@@ -60,7 +60,9 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           alt="one task logo"
           className="size-7 rounded-md"
         />
-        <div className="text-sm font-semibold tracking-tight">one task</div>
+        <div className="font-pixel-square text-[13px] tracking-wide">
+          one task
+        </div>
       </div>
 
       <nav className="flex flex-col gap-0.5">

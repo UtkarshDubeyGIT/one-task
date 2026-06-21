@@ -15,14 +15,24 @@ const config: Config = {
     },
     extend: {
       fontFamily: {
-        sans: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
+        sans: [
+          "var(--font-geist-sans)",
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif",
+        ],
         mono: [
-          "var(--font-mono)",
+          "var(--font-geist-mono)",
           "ui-monospace",
           "SFMono-Regular",
           "Menlo",
           "monospace",
         ],
+        "pixel-square": ["var(--font-geist-pixel-square)", "monospace"],
+        "pixel-grid": ["var(--font-geist-pixel-grid)", "monospace"],
+        "pixel-circle": ["var(--font-geist-pixel-circle)", "monospace"],
+        "pixel-triangle": ["var(--font-geist-pixel-triangle)", "monospace"],
+        "pixel-line": ["var(--font-geist-pixel-line)", "monospace"],
       },
       colors: {
         border: "hsl(var(--border))",

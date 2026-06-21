@@ -1,7 +1,28 @@
 import type { Metadata } from "next";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
+import {
+  GeistPixelCircle,
+  GeistPixelGrid,
+  GeistPixelLine,
+  GeistPixelSquare,
+  GeistPixelTriangle,
+} from "geist/font/pixel";
 
 import "./globals.css";
 import { AppShell } from "@/components/app-shell";
+
+// Geist is the only type family in the app: Sans (default), Mono (code/labels),
+// and the five Pixel variants (available as font-pixel-* utilities).
+const fontVariables = [
+  GeistSans.variable,
+  GeistMono.variable,
+  GeistPixelSquare.variable,
+  GeistPixelGrid.variable,
+  GeistPixelCircle.variable,
+  GeistPixelTriangle.variable,
+  GeistPixelLine.variable,
+].join(" ");
 
 export const metadata: Metadata = {
   title: "one task — deadline-first task manager",
@@ -24,7 +45,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={fontVariables}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
