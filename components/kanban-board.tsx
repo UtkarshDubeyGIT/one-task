@@ -10,11 +10,11 @@ import {
   kanbanColumns,
   type MilestoneView,
 } from "@/lib/selectors";
-import { relativeDeadline } from "@/lib/date";
+import { addDaysISO, relativeDeadline, todayISO } from "@/lib/date";
 import { cn } from "@/lib/utils";
 import { useTaskDialog } from "./app-providers";
 import { AreaDot } from "./area-dot";
-import { LabelChip } from "./label-chip";
+import { TaskLabels } from "./task-labels";
 
 const accentBar: Record<string, string> = {
   destructive: "bg-destructive",
@@ -23,6 +23,25 @@ const accentBar: Record<string, string> = {
   muted: "bg-muted-foreground/40",
   success: "bg-success",
 };
+
+/** What dropping a card into a column does (columns are time buckets). */
+function dropPatch(
+  colId: string,
+  today: string,
+): { date?: string; done?: boolean } | null {
+  switch (colId) {
+    case "today":
+      return { date: today, done: false };
+    case "week":
+      return { date: addDaysISO(today, 2), done: false };
+    case "later":
+      return { date: addDaysISO(today, 8), done: false };
+    case "done":
+      return { done: true };
+    default:
+      return null; // "overdue" isn't a meaningful drop target
+  }
+}
 
 function KanbanCard({
   view,
@@ -35,8 +54,13 @@ function KanbanCard({
 }) {
   return (
     <div
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.setData("text/plain", view.id);
+        e.dataTransfer.effectAllowed = "move";
+      }}
       onClick={() => onOpen(view.taskId)}
-      className="group cursor-pointer rounded-lg border bg-card p-3 shadow-sm transition-colors hover:border-foreground/25"
+      className="group cursor-grab rounded-lg border bg-card p-3 shadow-sm transition-colors hover:border-foreground/25 active:cursor-grabbing"
     >
       <div className="flex items-start gap-2">
         <button
@@ -71,11 +95,7 @@ function KanbanCard({
         </span>
       </div>
       <div className="mt-1.5 flex items-center justify-between gap-1 pl-6">
-        <div className="flex flex-wrap gap-1">
-          {view.task.labels.map((l) => (
-            <LabelChip key={l} label={l} />
-          ))}
-        </div>
+        <TaskLabels labelIds={view.task.labelIds} />
         <span className="shrink-0 font-mono text-[10px] tabular-nums text-muted-foreground">
           {relativeDeadline(view.date).replace("due ", "")}
         </span>
@@ -89,63 +109,92 @@ export function KanbanBoard() {
   const milestones = usePlanner((s) => s.milestones);
   const areas = usePlanner((s) => s.areas);
   const activeAreaId = usePlanner((s) => s.activeAreaId);
-  const activeLabels = usePlanner((s) => s.activeLabels);
+  const activeLabelIds = usePlanner((s) => s.activeLabelIds);
   const toggleMilestone = usePlanner((s) => s.toggleMilestone);
+  const updateMilestone = usePlanner((s) => s.updateMilestone);
   const { openEdit } = useTaskDialog();
+
+  const [overCol, setOverCol] = React.useState<string | null>(null);
+  const today = todayISO();
 
   const columns = React.useMemo(() => {
     const views = filterViews(
       joinMilestones(milestones, tasks, areas),
       activeAreaId,
-      activeLabels,
+      activeLabelIds,
     );
     return kanbanColumns(views);
-  }, [milestones, tasks, areas, activeAreaId, activeLabels]);
+  }, [milestones, tasks, areas, activeAreaId, activeLabelIds]);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 duration-300 animate-in fade-in-0">
       <div>
         <h1 className="text-xl font-semibold tracking-tight">Board</h1>
         <p className="mt-0.5 text-sm text-muted-foreground">
-          Milestones bucketed by deadline — not arbitrary columns.
+          Milestones bucketed by deadline — drag a card to reschedule it.
         </p>
       </div>
 
       <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-thin">
-        {columns.map((col) => (
-          <div
-            key={col.id}
-            className="flex w-72 shrink-0 flex-col rounded-xl border bg-background/40"
-          >
-            <div className="flex items-center justify-between gap-2 border-b px-3 py-2.5">
-              <div className="flex items-center gap-2">
-                <span
-                  className={cn("size-2 rounded-full", accentBar[col.accent])}
-                />
-                <span className="text-sm font-medium">{col.title}</span>
-              </div>
-              <span className="font-mono text-xs tabular-nums text-muted-foreground">
-                {col.items.length}
-              </span>
-            </div>
-            <div className="flex flex-col gap-2 p-2">
-              {col.items.length === 0 ? (
-                <p className="px-1 py-3 text-center text-xs text-muted-foreground/50">
-                  empty
-                </p>
-              ) : (
-                col.items.map((v) => (
-                  <KanbanCard
-                    key={v.id}
-                    view={v}
-                    onToggle={toggleMilestone}
-                    onOpen={openEdit}
-                  />
-                ))
+        {columns.map((col) => {
+          const isDropTarget = col.id !== "overdue";
+          return (
+            <div
+              key={col.id}
+              onDragOver={(e) => {
+                if (!isDropTarget) return;
+                e.preventDefault();
+                if (overCol !== col.id) setOverCol(col.id);
+              }}
+              onDragLeave={(e) => {
+                if (e.currentTarget === e.target) {
+                  setOverCol((c) => (c === col.id ? null : c));
+                }
+              }}
+              onDrop={(e) => {
+                if (!isDropTarget) return;
+                e.preventDefault();
+                setOverCol(null);
+                const id = e.dataTransfer.getData("text/plain");
+                const patch = dropPatch(col.id, today);
+                if (id && patch) updateMilestone(id, patch);
+              }}
+              className={cn(
+                "flex w-72 shrink-0 flex-col rounded-xl border bg-background/40 transition-colors duration-200",
+                overCol === col.id &&
+                  "border-primary/60 bg-primary/5 ring-1 ring-primary/30",
               )}
+            >
+              <div className="flex items-center justify-between gap-2 border-b px-3 py-2.5">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={cn("size-2 rounded-full", accentBar[col.accent])}
+                  />
+                  <span className="text-sm font-medium">{col.title}</span>
+                </div>
+                <span className="font-mono text-xs tabular-nums text-muted-foreground">
+                  {col.items.length}
+                </span>
+              </div>
+              <div className="flex min-h-[3rem] flex-col gap-2 p-2">
+                {col.items.length === 0 ? (
+                  <p className="px-1 py-3 text-center text-xs text-muted-foreground/50">
+                    {overCol === col.id ? "drop here" : "empty"}
+                  </p>
+                ) : (
+                  col.items.map((v) => (
+                    <KanbanCard
+                      key={v.id}
+                      view={v}
+                      onToggle={toggleMilestone}
+                      onOpen={openEdit}
+                    />
+                  ))
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

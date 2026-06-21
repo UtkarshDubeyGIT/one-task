@@ -12,8 +12,7 @@ import {
 } from "lucide-react";
 
 import { usePlanner } from "@/lib/store";
-import { LABELS } from "@/lib/types";
-import { labelMeta } from "@/lib/colors";
+import { labelChipClass } from "@/lib/colors";
 import { cn } from "@/lib/utils";
 import { AreaDot } from "./area-dot";
 import { ManageDialog } from "./manage-dialog";
@@ -32,7 +31,8 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const tasks = usePlanner((s) => s.tasks);
   const milestones = usePlanner((s) => s.milestones);
   const activeAreaId = usePlanner((s) => s.activeAreaId);
-  const activeLabels = usePlanner((s) => s.activeLabels);
+  const storeLabels = usePlanner((s) => s.labels);
+  const activeLabelIds = usePlanner((s) => s.activeLabelIds);
   const setActiveArea = usePlanner((s) => s.setActiveArea);
   const toggleLabelFilter = usePlanner((s) => s.toggleLabelFilter);
 
@@ -143,21 +143,26 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           Labels
         </div>
         <div className="flex flex-wrap gap-1.5 px-0.5">
-          {LABELS.map((l) => {
-            const active = activeLabels.includes(l);
+          {storeLabels.length === 0 && (
+            <span className="px-1 text-[11px] text-muted-foreground/70">
+              none yet
+            </span>
+          )}
+          {storeLabels.map((l) => {
+            const active = activeLabelIds.includes(l.id);
             return (
               <button
-                key={l}
+                key={l.id}
                 type="button"
-                onClick={() => toggleLabelFilter(l)}
+                onClick={() => toggleLabelFilter(l.id)}
                 className={cn(
                   "rounded border px-1.5 py-0.5 font-mono text-[10px] lowercase transition-all",
                   active
-                    ? labelMeta[l].className
+                    ? labelChipClass(l.color)
                     : "border-border text-muted-foreground hover:text-foreground",
                 )}
               >
-                {l}
+                {l.name}
               </button>
             );
           })}
@@ -171,7 +176,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground"
         >
           <Settings2 className="size-4" />
-          Areas &amp; data
+          Areas &amp; labels
         </button>
         <ThemeToggle />
       </div>

@@ -25,7 +25,7 @@ const tasks: Task[] = [
     title: "Task One",
     areaId: "a1",
     deadline: addDaysISO(T, 5),
-    labels: ["feat"],
+    labelIds: ["feat"],
     createdAt: CREATED,
   },
   {
@@ -33,7 +33,7 @@ const tasks: Task[] = [
     title: "Task Two",
     areaId: "a2",
     deadline: addDaysISO(T, 2),
-    labels: ["chore"],
+    labelIds: ["chore"],
     createdAt: CREATED,
   },
 ];
@@ -78,7 +78,7 @@ describe("filterViews", () => {
   it("filters by label", () => {
     const v = filterViews(allViews(), "all", ["feat"]);
     expect(v).toHaveLength(3);
-    expect(v.every((x) => x.task.labels.includes("feat"))).toBe(true);
+    expect(v.every((x) => x.task.labelIds.includes("feat"))).toBe(true);
   });
 });
 

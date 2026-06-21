@@ -17,8 +17,9 @@ export function TimelineView() {
   const milestones = usePlanner((s) => s.milestones);
   const areas = usePlanner((s) => s.areas);
   const activeAreaId = usePlanner((s) => s.activeAreaId);
-  const activeLabels = usePlanner((s) => s.activeLabels);
+  const activeLabelIds = usePlanner((s) => s.activeLabelIds);
   const toggleMilestone = usePlanner((s) => s.toggleMilestone);
+  const moveMilestone = usePlanner((s) => s.moveMilestone);
   const { openEdit, openCreate } = useTaskDialog();
 
   const [start, setStart] = React.useState(todayISO());
@@ -28,9 +29,9 @@ export function TimelineView() {
       filterViews(
         joinMilestones(milestones, tasks, areas),
         activeAreaId,
-        activeLabels,
+        activeLabelIds,
       ),
-    [milestones, tasks, areas, activeAreaId, activeLabels],
+    [milestones, tasks, areas, activeAreaId, activeLabelIds],
   );
   const days = React.useMemo(() => rangeISO(start, DAYS), [start]);
   const byDay = React.useMemo(
@@ -39,7 +40,7 @@ export function TimelineView() {
   );
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 duration-300 animate-in fade-in-0">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-xl font-semibold tracking-tight">Timeline</h1>
@@ -85,7 +86,8 @@ export function TimelineView() {
             views={items}
             onToggle={toggleMilestone}
             onOpen={openEdit}
-            onAdd={(day) => openCreate({ deadline: day })}
+            onAdd={(d) => openCreate({ deadline: d })}
+            onDropMilestone={(id, d) => moveMilestone(id, d)}
             className="md:w-[calc(50%-0.375rem)] lg:w-60 lg:shrink-0"
           />
         ))}

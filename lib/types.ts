@@ -1,10 +1,5 @@
 export type ID = string;
 
-/** Todoist-style task labels. */
-export type LabelKind = "feat" | "chore" | "explore";
-
-export const LABELS: LabelKind[] = ["feat", "chore", "explore"];
-
 export type AreaColor =
   | "indigo"
   | "violet"
@@ -33,6 +28,13 @@ export interface Area {
   color: AreaColor;
 }
 
+/** A user-managed tag (feat / chore / explore by default, plus any they add). */
+export interface Label {
+  id: ID;
+  name: string;
+  color: AreaColor;
+}
+
 /** A deadline-bearing item that breaks down into daily milestones. */
 export interface Task {
   id: ID;
@@ -40,7 +42,7 @@ export interface Task {
   areaId: ID;
   /** Final deadline, ISO date (yyyy-MM-dd). */
   deadline: string;
-  labels: LabelKind[];
+  labelIds: ID[];
   notes?: string;
   createdAt: string;
 }

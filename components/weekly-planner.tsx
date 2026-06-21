@@ -16,7 +16,7 @@ import {
 import { cn, clamp } from "@/lib/utils";
 import { useTaskDialog } from "./app-providers";
 import { AreaDot } from "./area-dot";
-import { LabelChip } from "./label-chip";
+import { TaskLabels } from "./task-labels";
 import { ProgressRing } from "./progress-ring";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -74,9 +74,7 @@ function TaskPlanRow({
           </button>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <DeadlinePill deadline={task.deadline} />
-            {task.labels.map((l) => (
-              <LabelChip key={l} label={l} />
-            ))}
+            <TaskLabels labelIds={task.labelIds} />
           </div>
         </div>
         <ProgressRing pct={prog.pct} size={44} stroke={4}>
@@ -157,7 +155,7 @@ export function WeeklyPlanner() {
   const milestones = usePlanner((s) => s.milestones);
   const areas = usePlanner((s) => s.areas);
   const activeAreaId = usePlanner((s) => s.activeAreaId);
-  const activeLabels = usePlanner((s) => s.activeLabels);
+  const activeLabelIds = usePlanner((s) => s.activeLabelIds);
   const distributeMilestones = usePlanner((s) => s.distributeMilestones);
   const toggleMilestone = usePlanner((s) => s.toggleMilestone);
   const { openEdit } = useTaskDialog();
@@ -173,19 +171,19 @@ export function WeeklyPlanner() {
     const today = todayISO();
     return tasks
       .filter((t) => {
-        if (!taskPassesFilter(t, activeAreaId, activeLabels)) return false;
+        if (!taskPassesFilter(t, activeAreaId, activeLabelIds)) return false;
         const d = diffDays(t.deadline, today);
         return offset === 0 ? d <= 6 : d >= 7 && d <= 13;
       })
       .sort((a, b) => compareISO(a.deadline, b.deadline));
-  }, [tasks, activeAreaId, activeLabels, offset]);
+  }, [tasks, activeAreaId, activeLabelIds, offset]);
 
   const unplannedCount = windowTasks.filter(
     (t) => !milestones.some((m) => m.taskId === t.id),
   ).length;
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-5">
+    <div className="mx-auto flex max-w-3xl flex-col gap-5 duration-300 animate-in fade-in-0">
       <div>
         <h1 className="text-xl font-semibold tracking-tight">Weekly planning</h1>
         <p className="mt-0.5 text-sm text-muted-foreground">

@@ -1,23 +1,23 @@
-import type { LabelKind } from "@/lib/types";
-import { labelMeta } from "@/lib/colors";
+import type { Label } from "@/lib/types";
+import { labelChipClass } from "@/lib/colors";
 import { cn } from "@/lib/utils";
 
 export function LabelChip({
   label,
   className,
 }: {
-  label: LabelKind;
+  label: Label;
   className?: string;
 }) {
   return (
     <span
       className={cn(
         "inline-flex items-center rounded border px-1.5 py-px font-mono text-[10px] font-medium lowercase tracking-wide",
-        labelMeta[label].className,
+        labelChipClass(label.color),
         className,
       )}
     >
-      {label}
+      {label.name}
     </span>
   );
 }

@@ -1,4 +1,4 @@
-import type { AreaColor, LabelKind } from "./types";
+import type { AreaColor } from "./types";
 
 /**
  * Literal class maps (Tailwind needs the full class strings at build time —
@@ -59,8 +59,7 @@ export const areaBarBg: Record<AreaColor, string> = {
   slate: "bg-slate-400",
 };
 
-export const labelMeta: Record<LabelKind, { className: string }> = {
-  feat: { className: "bg-violet-500/15 text-violet-300 border-violet-500/25" },
-  chore: { className: "bg-amber-500/15 text-amber-300 border-amber-500/25" },
-  explore: { className: "bg-sky-500/15 text-sky-300 border-sky-500/25" },
-};
+/** Combined chip classes for a label/badge of a given color. */
+export function labelChipClass(color: AreaColor): string {
+  return [areaSoftBg[color], areaText[color], areaBorder[color]].join(" ");
+}

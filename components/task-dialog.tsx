@@ -3,11 +3,11 @@
 import * as React from "react";
 import { CalendarRange, Check, Plus, Trash2 } from "lucide-react";
 
-import { LABELS, type LabelKind } from "@/lib/types";
+import type { ID } from "@/lib/types";
 import { usePlanner } from "@/lib/store";
 import { addDaysISO, compareISO, todayISO } from "@/lib/date";
 import { distributeDates } from "@/lib/planning";
-import { labelMeta } from "@/lib/colors";
+import { labelChipClass } from "@/lib/colors";
 import { cn, uid } from "@/lib/utils";
 import {
   Dialog,
@@ -51,6 +51,7 @@ export function TaskDialog({
   defaultDeadline?: string;
 }) {
   const areas = usePlanner((s) => s.areas);
+  const storeLabels = usePlanner((s) => s.labels);
   const tasks = usePlanner((s) => s.tasks);
   const milestones = usePlanner((s) => s.milestones);
   const activeAreaId = usePlanner((s) => s.activeAreaId);
@@ -80,7 +81,7 @@ export function TaskDialog({
   const [title, setTitle] = React.useState("");
   const [areaId, setAreaId] = React.useState("");
   const [deadline, setDeadline] = React.useState(addDaysISO(todayISO(), 7));
-  const [labels, setLabels] = React.useState<LabelKind[]>([]);
+  const [labelIds, setLabelIds] = React.useState<ID[]>([]);
   const [notes, setNotes] = React.useState("");
   const [drafts, setDrafts] = React.useState<Draft[]>([]);
   const [splitCount, setSplitCount] = React.useState(3);
@@ -92,7 +93,7 @@ export function TaskDialog({
       setTitle(task.title);
       setAreaId(task.areaId);
       setDeadline(task.deadline);
-      setLabels(task.labels);
+      setLabelIds(task.labelIds);
       setNotes(task.notes ?? "");
       setDrafts(
         existingMilestones.map((m) => ({
@@ -107,7 +108,7 @@ export function TaskDialog({
       setTitle("");
       setAreaId(activeAreaId !== "all" ? activeAreaId : areas[0]?.id ?? "");
       setDeadline(defaultDeadline ?? addDaysISO(todayISO(), 7));
-      setLabels([]);
+      setLabelIds([]);
       setNotes("");
       setDrafts([]);
     }
@@ -115,8 +116,10 @@ export function TaskDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, taskId]);
 
-  const toggleLabel = (l: LabelKind) =>
-    setLabels((cur) => (cur.includes(l) ? cur.filter((x) => x !== l) : [...cur, l]));
+  const toggleLabel = (id: ID) =>
+    setLabelIds((cur) =>
+      cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id],
+    );
 
   const setDraft = (key: string, patch: Partial<Draft>) =>
     setDrafts((cur) => cur.map((d) => (d.key === key ? { ...d, ...patch } : d)));
@@ -144,7 +147,7 @@ export function TaskDialog({
         title: title.trim(),
         areaId,
         deadline,
-        labels,
+        labelIds,
         notes: notes.trim() || undefined,
       });
       const keptIds = new Set(cleanDrafts.filter((d) => d.id).map((d) => d.id));
@@ -173,7 +176,7 @@ export function TaskDialog({
         title: title.trim(),
         areaId,
         deadline,
-        labels,
+        labelIds,
         notes: notes.trim() || undefined,
       });
       cleanDrafts
@@ -248,21 +251,26 @@ export function TaskDialog({
               Labels
             </label>
             <div className="flex flex-wrap gap-2">
-              {LABELS.map((l) => {
-                const active = labels.includes(l);
+              {storeLabels.length === 0 && (
+                <span className="text-xs text-muted-foreground">
+                  No labels yet — create some in Areas &amp; labels.
+                </span>
+              )}
+              {storeLabels.map((l) => {
+                const active = labelIds.includes(l.id);
                 return (
                   <button
-                    key={l}
+                    key={l.id}
                     type="button"
-                    onClick={() => toggleLabel(l)}
+                    onClick={() => toggleLabel(l.id)}
                     className={cn(
                       "rounded-md border px-2.5 py-1 font-mono text-xs lowercase transition-all",
                       active
-                        ? labelMeta[l].className
+                        ? labelChipClass(l.color)
                         : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground",
                     )}
                   >
-                    {l}
+                    {l.name}
                   </button>
                 );
               })}

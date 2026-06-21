@@ -1,4 +1,4 @@
-import type { Area, Milestone, Task } from "./types";
+import type { Area, Label, Milestone, Task } from "./types";
 import { uid } from "./utils";
 import { addDaysISO, todayISO } from "./date";
 
@@ -6,6 +6,12 @@ export const defaultAreas: Area[] = [
   { id: "area_study", name: "Study", color: "sky" },
   { id: "area_intern", name: "Intern Work", color: "violet" },
   { id: "area_personal", name: "Personal Projects", color: "emerald" },
+];
+
+export const defaultLabels: Label[] = [
+  { id: "label_feat", name: "feat", color: "violet" },
+  { id: "label_chore", name: "chore", color: "amber" },
+  { id: "label_explore", name: "explore", color: "sky" },
 ];
 
 interface SeedData {
@@ -52,7 +58,7 @@ export function makeSeed(): SeedData {
     title: "Integrate Sarvam AI + Twilio + LiveKit",
     areaId: "area_personal",
     deadline: addDaysISO(t, 4),
-    labels: ["feat"],
+    labelIds: ["label_feat"],
     notes: "Voice agent MVP: phone call in → LiveKit room → Sarvam STT/TTS.",
   });
   addM(sarvam.id, "LiveKit room + token server", t, true, 0);
@@ -66,7 +72,7 @@ export function makeSeed(): SeedData {
     title: "Ship analytics dashboard v2",
     areaId: "area_intern",
     deadline: addDaysISO(t, 2),
-    labels: ["feat", "chore"],
+    labelIds: ["label_feat", "label_chore"],
   });
   addM(dash.id, "Fix date-range filter bug", t, false, 0);
   addM(dash.id, "Add cohort retention chart", addDaysISO(t, 1), false, 1);
@@ -78,7 +84,7 @@ export function makeSeed(): SeedData {
     title: "Write API docs for auth service",
     areaId: "area_intern",
     deadline: addDaysISO(t, 1),
-    labels: ["chore"],
+    labelIds: ["label_chore"],
   });
   addM(docs.id, "Draft endpoint reference", addDaysISO(t, -1), false, 0);
   addM(docs.id, "Examples + error codes", addDaysISO(t, 1), false, 1);
@@ -89,7 +95,7 @@ export function makeSeed(): SeedData {
     title: "DSA: Graphs module",
     areaId: "area_study",
     deadline: addDaysISO(t, 6),
-    labels: ["explore"],
+    labelIds: ["label_explore"],
   });
   addM(dsa.id, "Watch BFS / DFS lecture", t, true, 0);
   addM(dsa.id, "Solve 5 graph problems", addDaysISO(t, 2), false, 1);
@@ -102,7 +108,7 @@ export function makeSeed(): SeedData {
     title: "Portfolio site refresh",
     areaId: "area_personal",
     deadline: addDaysISO(t, 9),
-    labels: ["feat", "explore"],
+    labelIds: ["label_feat", "label_explore"],
   });
   addM(portfolio.id, "New hero + case-study layout", addDaysISO(t, 3), false, 0);
   addM(portfolio.id, "Dark mode + page transitions", addDaysISO(t, 6), false, 1);

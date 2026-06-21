@@ -1,4 +1,4 @@
-import type { Area, AreaFilter, LabelKind, Milestone, Task } from "./types";
+import type { Area, AreaFilter, ID, Milestone, Task } from "./types";
 import { compareISO, diffDays, todayISO } from "./date";
 
 export interface MilestoneView extends Milestone {
@@ -26,10 +26,10 @@ export function joinMilestones(
 export function taskPassesFilter(
   task: Task,
   areaId: AreaFilter,
-  labels: LabelKind[],
+  labelIds: ID[],
 ): boolean {
   if (areaId !== "all" && task.areaId !== areaId) return false;
-  if (labels.length > 0 && !labels.some((l) => task.labels.includes(l))) {
+  if (labelIds.length > 0 && !labelIds.some((id) => task.labelIds.includes(id))) {
     return false;
   }
   return true;
@@ -38,9 +38,9 @@ export function taskPassesFilter(
 export function filterViews(
   views: MilestoneView[],
   areaId: AreaFilter,
-  labels: LabelKind[],
+  labelIds: ID[],
 ): MilestoneView[] {
-  return views.filter((v) => taskPassesFilter(v.task, areaId, labels));
+  return views.filter((v) => taskPassesFilter(v.task, areaId, labelIds));
 }
 
 /** Canonical ordering: assigned day, then deadline, then intra-day order. */

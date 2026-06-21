@@ -94,12 +94,34 @@ describe("planner store", () => {
     expect(s().areas).toHaveLength(1);
   });
 
+  it("ships three default labels", () => {
+    expect(s().labels.map((l) => l.name)).toEqual(["feat", "chore", "explore"]);
+  });
+
+  it("addLabel / removeLabel manages labels and cascades to tasks + filter", () => {
+    const before = s().labels.length;
+    const lbl = s().addLabel("urgent", "rose");
+    expect(s().labels.length).toBe(before + 1);
+    const t = s().addTask({
+      title: "X",
+      areaId: "area_study",
+      deadline: todayISO(),
+      labelIds: [lbl.id],
+    });
+    s().toggleLabelFilter(lbl.id);
+    expect(s().activeLabelIds).toEqual([lbl.id]);
+    s().removeLabel(lbl.id);
+    expect(s().labels.find((x) => x.id === lbl.id)).toBe(undefined);
+    expect(s().tasks.find((x) => x.id === t.id)?.labelIds).toEqual([]);
+    expect(s().activeLabelIds).toEqual([]);
+  });
+
   it("label filter toggles on and off", () => {
-    expect(s().activeLabels).toHaveLength(0);
-    s().toggleLabelFilter("feat");
-    expect(s().activeLabels).toEqual(["feat"]);
-    s().toggleLabelFilter("feat");
-    expect(s().activeLabels).toHaveLength(0);
+    expect(s().activeLabelIds).toHaveLength(0);
+    s().toggleLabelFilter("label_feat");
+    expect(s().activeLabelIds).toEqual(["label_feat"]);
+    s().toggleLabelFilter("label_feat");
+    expect(s().activeLabelIds).toHaveLength(0);
   });
 
   it("updateTask patches fields", () => {

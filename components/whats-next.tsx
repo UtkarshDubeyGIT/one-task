@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 import { useTaskDialog } from "./app-providers";
 import { MilestoneRow } from "./milestone-row";
 import { AreaDot } from "./area-dot";
-import { LabelChip } from "./label-chip";
+import { TaskLabels } from "./task-labels";
 import { ProgressRing } from "./progress-ring";
 import { EmptyState } from "./empty-state";
 import { Button } from "@/components/ui/button";
@@ -124,9 +124,7 @@ function FeaturedNext({
                 <CalendarClock className="size-3" />
                 {formatWeekdayLong(view.date)}
               </span>
-              {view.task.labels.map((l) => (
-                <LabelChip key={l} label={l} />
-              ))}
+              <TaskLabels labelIds={view.task.labelIds} />
             </div>
           </div>
 
@@ -157,7 +155,7 @@ export function WhatsNext() {
   const milestones = usePlanner((s) => s.milestones);
   const areas = usePlanner((s) => s.areas);
   const activeAreaId = usePlanner((s) => s.activeAreaId);
-  const activeLabels = usePlanner((s) => s.activeLabels);
+  const activeLabelIds = usePlanner((s) => s.activeLabelIds);
   const toggleMilestone = usePlanner((s) => s.toggleMilestone);
   const { openCreate, openEdit } = useTaskDialog();
 
@@ -166,9 +164,9 @@ export function WhatsNext() {
       filterViews(
         joinMilestones(milestones, tasks, areas),
         activeAreaId,
-        activeLabels,
+        activeLabelIds,
       ),
-    [milestones, tasks, areas, activeAreaId, activeLabels],
+    [milestones, tasks, areas, activeAreaId, activeLabelIds],
   );
   const wn = React.useMemo(() => computeWhatsNext(views), [views]);
 
@@ -192,7 +190,7 @@ export function WhatsNext() {
     wn.upcoming.length === 0;
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6">
+    <div className="mx-auto flex max-w-3xl flex-col gap-6 duration-300 animate-in fade-in-0">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">{greeting()}</h1>

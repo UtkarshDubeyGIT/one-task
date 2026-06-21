@@ -56,11 +56,17 @@ export function ManageDialog({
   const addArea = usePlanner((s) => s.addArea);
   const updateArea = usePlanner((s) => s.updateArea);
   const removeArea = usePlanner((s) => s.removeArea);
+  const labels = usePlanner((s) => s.labels);
+  const addLabel = usePlanner((s) => s.addLabel);
+  const updateLabel = usePlanner((s) => s.updateLabel);
+  const removeLabel = usePlanner((s) => s.removeLabel);
   const reseed = usePlanner((s) => s.reseed);
   const clearTasks = usePlanner((s) => s.clearTasks);
 
   const [newName, setNewName] = React.useState("");
   const [newColor, setNewColor] = React.useState<AreaColor>("indigo");
+  const [newLabelName, setNewLabelName] = React.useState("");
+  const [newLabelColor, setNewLabelColor] = React.useState<AreaColor>("violet");
   const [confirmClear, setConfirmClear] = React.useState(false);
 
   const add = () => {
@@ -69,14 +75,20 @@ export function ManageDialog({
     setNewName("");
   };
 
+  const addLbl = () => {
+    if (!newLabelName.trim()) return;
+    addLabel(newLabelName, newLabelColor);
+    setNewLabelName("");
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[88vh] overflow-y-auto scrollbar-thin">
         <DialogClose onClose={() => onOpenChange(false)} />
         <DialogHeader>
-          <DialogTitle>Areas &amp; data</DialogTitle>
+          <DialogTitle>Areas, labels &amp; data</DialogTitle>
           <DialogDescription>
-            Rename areas, recolor them, or manage your sample data.
+            Manage your areas and labels, or reset the sample data.
           </DialogDescription>
         </DialogHeader>
 
@@ -126,6 +138,61 @@ export function ManageDialog({
             <Button size="sm" onClick={add}>
               <Plus /> Add
             </Button>
+          </div>
+
+          <div className="border-t pt-3">
+            <p className="mb-2 text-xs font-medium text-muted-foreground">
+              Labels
+            </p>
+            <div className="flex flex-col gap-2">
+              {labels.map((l) => {
+                const count = tasks.filter((t) =>
+                  t.labelIds.includes(l.id),
+                ).length;
+                return (
+                  <div
+                    key={l.id}
+                    className="flex items-center gap-2 rounded-lg border p-2"
+                  >
+                    <ColorPicker
+                      value={l.color}
+                      onChange={(c) => updateLabel(l.id, { color: c })}
+                    />
+                    <Input
+                      value={l.name}
+                      onChange={(e) =>
+                        updateLabel(l.id, { name: e.target.value })
+                      }
+                      className="h-8 flex-1"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => removeLabel(l.id)}
+                      title={count ? `Used on ${count} task(s)` : "Delete label"}
+                      aria-label="Delete label"
+                    >
+                      <Trash2 className="text-muted-foreground" />
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-2 flex items-center gap-2">
+              <ColorPicker value={newLabelColor} onChange={setNewLabelColor} />
+              <Input
+                value={newLabelName}
+                placeholder="New label…"
+                onChange={(e) => setNewLabelName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") addLbl();
+                }}
+                className="h-8 flex-1"
+              />
+              <Button size="sm" onClick={addLbl}>
+                <Plus /> Add
+              </Button>
+            </div>
           </div>
 
           <div className="rounded-lg border border-border/70 p-3">

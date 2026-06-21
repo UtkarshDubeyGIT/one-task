@@ -3,10 +3,10 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-import type { Area, AreaColor, AreaFilter, ID, LabelKind, Milestone, Task } from "./types";
+import type { Area, AreaColor, AreaFilter, ID, Label, Milestone, Task } from "./types";
 import { todayISO } from "./date";
 import { distributeDates } from "./planning";
-import { defaultAreas, makeSeed } from "./seed";
+import { defaultAreas, defaultLabels, makeSeed } from "./seed";
 import { uid } from "./utils";
 
 /**
@@ -28,10 +28,11 @@ const storage = createJSONStorage<PersistedSlice>(() =>
 
 interface PersistedSlice {
   areas: Area[];
+  labels: Label[];
   tasks: Task[];
   milestones: Milestone[];
   activeAreaId: AreaFilter;
-  activeLabels: LabelKind[];
+  activeLabelIds: ID[];
 }
 
 export interface PlannerState extends PersistedSlice {
@@ -39,18 +40,22 @@ export interface PlannerState extends PersistedSlice {
 
   setHasHydrated: (v: boolean) => void;
   setActiveArea: (id: AreaFilter) => void;
-  toggleLabelFilter: (label: LabelKind) => void;
+  toggleLabelFilter: (labelId: ID) => void;
   clearFilters: () => void;
 
   addArea: (name: string, color: AreaColor) => Area;
   updateArea: (id: ID, patch: Partial<Omit<Area, "id">>) => void;
   removeArea: (id: ID) => void;
 
+  addLabel: (name: string, color: AreaColor) => Label;
+  updateLabel: (id: ID, patch: Partial<Omit<Label, "id">>) => void;
+  removeLabel: (id: ID) => void;
+
   addTask: (input: {
     title: string;
     areaId: ID;
     deadline: string;
-    labels?: LabelKind[];
+    labelIds?: ID[];
     notes?: string;
   }) => Task;
   updateTask: (id: ID, patch: Partial<Omit<Task, "id" | "createdAt">>) => void;
@@ -79,10 +84,11 @@ function buildInitial(): PersistedSlice {
   const { tasks, milestones } = makeSeed();
   return {
     areas: defaultAreas,
+    labels: defaultLabels,
     tasks,
     milestones,
     activeAreaId: "all",
-    activeLabels: [],
+    activeLabelIds: [],
   };
 }
 
@@ -94,13 +100,13 @@ export const usePlanner = create<PlannerState>()(
 
       setHasHydrated: (v) => set({ hasHydrated: v }),
       setActiveArea: (id) => set({ activeAreaId: id }),
-      toggleLabelFilter: (label) =>
+      toggleLabelFilter: (labelId) =>
         set((s) => ({
-          activeLabels: s.activeLabels.includes(label)
-            ? s.activeLabels.filter((l) => l !== label)
-            : [...s.activeLabels, label],
+          activeLabelIds: s.activeLabelIds.includes(labelId)
+            ? s.activeLabelIds.filter((l) => l !== labelId)
+            : [...s.activeLabelIds, labelId],
         })),
-      clearFilters: () => set({ activeAreaId: "all", activeLabels: [] }),
+      clearFilters: () => set({ activeAreaId: "all", activeLabelIds: [] }),
 
       addArea: (name, color) => {
         const area: Area = { id: uid("area"), name: name.trim() || "Untitled", color };
@@ -126,13 +132,37 @@ export const usePlanner = create<PlannerState>()(
           };
         }),
 
+      addLabel: (name, color) => {
+        const label: Label = {
+          id: uid("label"),
+          name: name.trim() || "label",
+          color,
+        };
+        set((s) => ({ labels: [...s.labels, label] }));
+        return label;
+      },
+      updateLabel: (id, patch) =>
+        set((s) => ({
+          labels: s.labels.map((l) => (l.id === id ? { ...l, ...patch } : l)),
+        })),
+      removeLabel: (id) =>
+        set((s) => ({
+          labels: s.labels.filter((l) => l.id !== id),
+          tasks: s.tasks.map((t) =>
+            t.labelIds.includes(id)
+              ? { ...t, labelIds: t.labelIds.filter((x) => x !== id) }
+              : t,
+          ),
+          activeLabelIds: s.activeLabelIds.filter((x) => x !== id),
+        })),
+
       addTask: (input) => {
         const task: Task = {
           id: uid("task"),
           title: input.title.trim(),
           areaId: input.areaId,
           deadline: input.deadline,
-          labels: input.labels ?? [],
+          labelIds: input.labelIds ?? [],
           notes: input.notes?.trim() || undefined,
           createdAt: new Date().toISOString(),
         };
@@ -220,7 +250,12 @@ export const usePlanner = create<PlannerState>()(
 
       reseed: () => {
         const { tasks, milestones } = makeSeed();
-        set({ areas: defaultAreas, tasks, milestones });
+        set({
+          areas: defaultAreas,
+          labels: defaultLabels,
+          tasks,
+          milestones,
+        });
       },
       clearTasks: () => set({ tasks: [], milestones: [] }),
     }),
@@ -230,10 +265,11 @@ export const usePlanner = create<PlannerState>()(
       storage,
       partialize: (s): PersistedSlice => ({
         areas: s.areas,
+        labels: s.labels,
         tasks: s.tasks,
         milestones: s.milestones,
         activeAreaId: s.activeAreaId,
-        activeLabels: s.activeLabels,
+        activeLabelIds: s.activeLabelIds,
       }),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
