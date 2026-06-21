@@ -15,6 +15,8 @@ import { usePlanner } from "@/lib/store";
 import { labelChipClass } from "@/lib/colors";
 import { cn } from "@/lib/utils";
 import { AreaDot } from "./area-dot";
+import { InstallButton } from "./install-button";
+import { LockButton } from "./lock-button";
 import { ManageDialog } from "./manage-dialog";
 import { SyncStatus } from "./sync-status";
 import { ThemeToggle } from "./theme-toggle";
@@ -171,6 +173,9 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       </div>
 
       <div className="mt-auto flex flex-col gap-1.5 pt-3">
+        <div className="px-1">
+          <InstallButton />
+        </div>
         <div className="px-2">
           <SyncStatus />
         </div>
@@ -183,7 +188,10 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             <Settings2 className="size-4" />
             Areas &amp; labels
           </button>
-          <ThemeToggle />
+          <div className="flex items-center gap-1">
+            <LockButton />
+            <ThemeToggle />
+          </div>
         </div>
       </div>
 

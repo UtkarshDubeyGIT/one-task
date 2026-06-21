@@ -117,6 +117,35 @@ anything sensitive.
 Server read/write lives in `app/api/state/route.ts`; the client bridge is
 `components/sync-manager.tsx`.
 
+### Passcode lock (optional)
+
+Set an `APP_PASSCODE` env var in Vercel to require a passcode. The app then
+shows an unlock screen and gates the data API; entering the passcode sets a
+long-lived httpOnly cookie so **each device stays unlocked for a year**.
+Optionally set `APP_AUTH_SECRET` to salt the device token. With no
+`APP_PASSCODE`, the app stays open. Lock a device any time from the sidebar
+lock button. Auth lives in `lib/auth.ts` + `app/api/auth/route.ts`.
+
+### Install as an app (PWA)
+
+Installable on phone, tablet, and desktop (web manifest + a service worker in
+`public/sw.js`, registered by `components/pwa-register.tsx`):
+
+- **Desktop / Android (Chrome, Edge):** click **Install app** in the sidebar,
+  or use the browser's install icon in the address bar.
+- **iPhone / iPad (Safari):** Share → **Add to Home Screen**.
+
+Installed, it opens in its own window (no browser chrome) and the UI shell
+works offline.
+
+### Environment variables
+
+| Variable | Purpose |
+| --- | --- |
+| `KV_REST_API_URL` / `KV_REST_API_TOKEN` | Vercel KV / Upstash Redis — enables cloud sync |
+| `APP_PASSCODE` | Require a passcode to use the app |
+| `APP_AUTH_SECRET` | Optional salt for the device token |
+
 ## License
 
 MIT — yours to do whatever with.

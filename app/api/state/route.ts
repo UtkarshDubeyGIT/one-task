@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { Redis } from "@upstash/redis";
 
+import { authRequired, isAuthed } from "@/lib/auth";
 import type { Snapshot } from "@/lib/types";
 
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const KEY = "one-task:state:v1";
@@ -21,6 +23,9 @@ function getRedis(): Redis | null {
 }
 
 export async function GET() {
+  if (authRequired() && !isAuthed()) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
   const redis = getRedis();
   if (!redis) return NextResponse.json({ configured: false, state: null });
   try {
@@ -32,6 +37,9 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
+  if (authRequired() && !isAuthed()) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
   const redis = getRedis();
   if (!redis) return NextResponse.json({ configured: false });
   try {

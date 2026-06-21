@@ -6,7 +6,9 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "one task",
     description:
       "Deadline-first task manager — break tasks into daily milestones and always know what's next.",
+    id: "/",
     start_url: "/",
+    scope: "/",
     display: "standalone",
     background_color: "#0e0f13",
     theme_color: "#0e0f13",
