@@ -123,7 +123,7 @@ function Shell({ children }: { children: React.ReactNode }) {
             <span className="hidden items-center gap-1.5 text-xs text-muted-foreground sm:flex">
               Quick add <Kbd size="sm">N</Kbd>
             </span>
-            <Button size="sm" onClick={openCreate}>
+            <Button size="sm" onClick={() => openCreate()}>
               <Plus /> New task
             </Button>
           </div>

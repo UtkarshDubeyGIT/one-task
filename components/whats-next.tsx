@@ -198,7 +198,7 @@ export function WhatsNext() {
           <h1 className="text-2xl font-semibold tracking-tight">{greeting()}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{formatFull(today)}</p>
         </div>
-        <Button onClick={openCreate}>
+        <Button onClick={() => openCreate()}>
           <Plus /> New task
         </Button>
       </header>
@@ -230,7 +230,7 @@ export function WhatsNext() {
           title="Nothing planned yet"
           description="Create a task with a deadline, then break it into daily milestones to see what to work on next."
           action={
-            <Button onClick={openCreate}>
+            <Button onClick={() => openCreate()}>
               <Plus /> New task
             </Button>
           }
