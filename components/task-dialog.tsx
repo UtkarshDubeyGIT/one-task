@@ -220,11 +220,16 @@ export function TaskDialog({
         labelIds,
         notes: notes.trim() || undefined,
       });
-      cleanDrafts
-        .filter((d) => d.title.trim())
-        .forEach((d) =>
+      const newMilestones = cleanDrafts.filter((d) => d.title.trim());
+      if (newMilestones.length === 0) {
+        // A todo with no breakdown still needs to be visible: give it a single
+        // milestone (itself) on its deadline so it shows across all views.
+        addMilestone({ taskId: created.id, title: title.trim(), date: deadline });
+      } else {
+        newMilestones.forEach((d) =>
           addMilestone({ taskId: created.id, title: d.title.trim(), date: d.date }),
         );
+      }
       if (createMore) resetForMore();
       else onOpenChange(false);
     }

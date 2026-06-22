@@ -56,7 +56,11 @@ export function MilestoneRow({
         {showContext && (
           <div className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
             {view.area && <AreaDot color={view.area.color} />}
-            <span className="truncate">{view.task.title}</span>
+            <span className="truncate">
+              {view.title === view.task.title
+                ? view.area?.name ?? ""
+                : view.task.title}
+            </span>
           </div>
         )}
       </div>
