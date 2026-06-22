@@ -12,10 +12,11 @@ import {
   X,
 } from "lucide-react";
 
-import type { ID } from "@/lib/types";
+import { AREA_COLORS, type ID } from "@/lib/types";
 import { usePlanner } from "@/lib/store";
 import { addDaysISO, compareISO, formatMonthDay, todayISO } from "@/lib/date";
 import { distributeDates } from "@/lib/planning";
+import { parseTaskInput } from "@/lib/parse";
 import { labelChipClass } from "@/lib/colors";
 import { cn, uid } from "@/lib/utils";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -89,6 +90,7 @@ export function TaskDialog({
   const addMilestone = usePlanner((s) => s.addMilestone);
   const updateMilestone = usePlanner((s) => s.updateMilestone);
   const removeMilestone = usePlanner((s) => s.removeMilestone);
+  const addLabel = usePlanner((s) => s.addLabel);
 
   const isEdit = Boolean(taskId);
   const task = React.useMemo(
@@ -150,6 +152,26 @@ export function TaskDialog({
 
   const area = areas.find((a) => a.id === areaId);
   const canSave = title.trim().length > 0 && Boolean(areaId) && Boolean(deadline);
+
+  const matchArea = (token: string) => {
+    const t = token.toLowerCase();
+    return areas.find(
+      (a) =>
+        a.name.toLowerCase() === t ||
+        a.name.toLowerCase().replace(/\s+/g, "") === t ||
+        a.name.toLowerCase().split(" ")[0] === t,
+    );
+  };
+
+  // Quick Add: live natural-language parse (create mode only).
+  const parsed = React.useMemo(
+    () => (isEdit ? null : parseTaskInput(title, todayISO())),
+    [isEdit, title],
+  );
+  const parsedArea = parsed?.areaToken ? matchArea(parsed.areaToken) : undefined;
+  const hasParse =
+    !!parsed &&
+    (!!parsed.deadline || !!parsed.areaToken || parsed.labelTokens.length > 0);
 
   const toggleLabel = (id: ID) =>
     setLabelIds((cur) =>
@@ -213,18 +235,41 @@ export function TaskDialog({
       });
       onOpenChange(false);
     } else {
+      // Apply the natural-language parse: clean title + detected
+      // deadline / #area / @labels (creating labels that don't exist yet).
+      const p = parseTaskInput(title, todayISO());
+      const finalTitle = p.title.trim() || title.trim();
+      const finalDeadline = p.deadline ?? deadline;
+      const finalAreaId = (p.areaToken && matchArea(p.areaToken)?.id) || areaId;
+
+      const finalLabelIds = [...labelIds];
+      let addedLabels = 0;
+      for (const name of p.labelTokens) {
+        const existing = storeLabels.find(
+          (l) => l.name.toLowerCase() === name.toLowerCase(),
+        );
+        if (existing) {
+          if (!finalLabelIds.includes(existing.id)) finalLabelIds.push(existing.id);
+        } else {
+          const color =
+            AREA_COLORS[(storeLabels.length + addedLabels) % AREA_COLORS.length];
+          finalLabelIds.push(addLabel(name, color).id);
+          addedLabels += 1;
+        }
+      }
+
       const created = addTask({
-        title: title.trim(),
-        areaId,
-        deadline,
-        labelIds,
+        title: finalTitle,
+        areaId: finalAreaId,
+        deadline: finalDeadline,
+        labelIds: finalLabelIds,
         notes: notes.trim() || undefined,
       });
       const newMilestones = cleanDrafts.filter((d) => d.title.trim());
       if (newMilestones.length === 0) {
         // A todo with no breakdown still needs to be visible: give it a single
         // milestone (itself) on its deadline so it shows across all views.
-        addMilestone({ taskId: created.id, title: title.trim(), date: deadline });
+        addMilestone({ taskId: created.id, title: finalTitle, date: finalDeadline });
       } else {
         newMilestones.forEach((d) =>
           addMilestone({ taskId: created.id, title: d.title.trim(), date: d.date }),
@@ -286,7 +331,11 @@ export function TaskDialog({
                 handleSave();
               }
             }}
-            placeholder="Task title"
+            placeholder={
+              isEdit
+                ? "Task title"
+                : "Task title — try: pay rent friday #Personal @urgent"
+            }
             className="w-full bg-transparent text-lg font-medium outline-none placeholder:text-muted-foreground/50"
           />
           <textarea
@@ -298,6 +347,33 @@ export function TaskDialog({
             className="mt-1 w-full resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground/40"
           />
         </div>
+
+        {!isEdit && hasParse && parsed && (
+          <div className="mx-4 mt-1 flex flex-wrap items-center gap-1.5 rounded-md bg-primary/5 px-2.5 py-1.5 text-xs">
+            <span className="text-muted-foreground">Detected:</span>
+            <span className="font-medium text-foreground">
+              {parsed.title || "(untitled)"}
+            </span>
+            {parsed.deadline && (
+              <span className="inline-flex items-center gap-1 rounded border border-border px-1.5 py-0.5 text-muted-foreground">
+                <CalendarClock className="size-3" /> {formatMonthDay(parsed.deadline)}
+              </span>
+            )}
+            {parsedArea && (
+              <span className="inline-flex items-center gap-1 rounded border border-border px-1.5 py-0.5 text-muted-foreground">
+                # {parsedArea.name}
+              </span>
+            )}
+            {parsed.labelTokens.map((l) => (
+              <span
+                key={l}
+                className="rounded border border-border px-1.5 py-0.5 font-mono text-[10px] lowercase text-muted-foreground"
+              >
+                @{l}
+              </span>
+            ))}
+          </div>
+        )}
 
         <div className="flex flex-wrap items-center gap-1.5 px-4 pb-1 pt-1">
           <Pill active={panel === "area"} onClick={() => togglePanel("area")}>
