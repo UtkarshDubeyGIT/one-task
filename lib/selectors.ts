@@ -29,7 +29,10 @@ export function taskPassesFilter(
   labelIds: ID[],
 ): boolean {
   if (areaId !== "all" && task.areaId !== areaId) return false;
-  if (labelIds.length > 0 && !labelIds.some((id) => task.labelIds.includes(id))) {
+  if (
+    labelIds.length > 0 &&
+    !labelIds.some((id) => (task.labelIds ?? []).includes(id))
+  ) {
     return false;
   }
   return true;

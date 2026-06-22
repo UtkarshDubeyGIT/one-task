@@ -18,7 +18,9 @@ export function TaskLabels({
   const labels = usePlanner((s) => s.labels);
   const items = React.useMemo(() => {
     const map = new Map(labels.map((l) => [l.id, l]));
-    return labelIds.map((id) => map.get(id)).filter(Boolean) as Label[];
+    return (labelIds ?? [])
+      .map((id) => map.get(id))
+      .filter(Boolean) as Label[];
   }, [labels, labelIds]);
 
   if (items.length === 0) return null;

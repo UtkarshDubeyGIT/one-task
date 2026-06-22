@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { usePlanner } from "./store";
+import { migrateState, usePlanner } from "./store";
 import { addDaysISO, todayISO } from "./date";
 
 const s = () => usePlanner.getState();
@@ -163,5 +163,52 @@ describe("planner store", () => {
     expect(s().labels.map((l) => l.id)).toEqual(["l"]);
     expect(s().tasks).toHaveLength(1);
     expect(s().milestones).toHaveLength(0);
+  });
+});
+
+describe("migrateState (persistence migration)", () => {
+  it("upgrades pre-refactor tasks (labels[] → labelIds) and fills gaps", () => {
+    const out = migrateState({
+      areas: [{ id: "a1", name: "Study", color: "sky" }],
+      tasks: [
+        {
+          id: "t1",
+          title: "X",
+          areaId: "a1",
+          deadline: "2026-06-21",
+          labels: ["feat", "chore"],
+          createdAt: "2026-01-01T00:00:00.000Z",
+        },
+        {
+          id: "t2",
+          title: "Y",
+          areaId: "a1",
+          deadline: "2026-06-22",
+          labelIds: ["label_explore"],
+          createdAt: "2026-01-01T00:00:00.000Z",
+        },
+      ],
+      milestones: [],
+      activeAreaId: "all",
+      activeLabels: ["feat"],
+    });
+    expect(out.tasks[0].labelIds).toEqual(["label_feat", "label_chore"]);
+    // legacy `labels` field is dropped
+    expect((out.tasks[0] as unknown as { labels?: unknown }).labels).toBe(
+      undefined,
+    );
+    expect(out.tasks[1].labelIds).toEqual(["label_explore"]);
+    expect(out.activeLabelIds).toEqual(["label_feat"]);
+    // labels were missing → defaulted
+    expect(out.labels).toHaveLength(3);
+  });
+
+  it("returns sane defaults for empty / garbage input", () => {
+    const out = migrateState(undefined);
+    expect(out.areas).toHaveLength(3);
+    expect(out.labels).toHaveLength(3);
+    expect(out.tasks).toEqual([]);
+    expect(out.activeAreaId).toBe("all");
+    expect(out.activeLabelIds).toEqual([]);
   });
 });

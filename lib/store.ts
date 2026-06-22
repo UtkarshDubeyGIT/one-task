@@ -45,6 +45,59 @@ interface PersistedSlice {
   activeLabelIds: ID[];
 }
 
+const LABEL_KIND_TO_ID: Record<string, string> = {
+  feat: "label_feat",
+  chore: "label_chore",
+  explore: "label_explore",
+};
+
+/**
+ * Normalizes any older persisted shape to the current slice. Critically it
+ * repairs pre-`labelIds` data: tasks saved before the labels refactor carried a
+ * `labels: string[]` field and no `labelIds`, which crashed label rendering.
+ * Idempotent — already-current data passes through unchanged.
+ */
+export function migrateState(persisted: unknown): PersistedSlice {
+  const s = (persisted && typeof persisted === "object"
+    ? persisted
+    : {}) as Record<string, unknown>;
+
+  const areas = Array.isArray(s.areas) ? (s.areas as Area[]) : [];
+  const labels = Array.isArray(s.labels) ? (s.labels as Label[]) : [];
+  const milestones = Array.isArray(s.milestones)
+    ? (s.milestones as Milestone[])
+    : [];
+
+  const rawTasks = Array.isArray(s.tasks)
+    ? (s.tasks as Record<string, unknown>[])
+    : [];
+  const tasks: Task[] = rawTasks.map((t) => {
+    const labelIds = Array.isArray(t.labelIds)
+      ? (t.labelIds as string[])
+      : Array.isArray(t.labels)
+        ? (t.labels as string[]).map((k) => LABEL_KIND_TO_ID[k]).filter(Boolean)
+        : [];
+    const { labels: _legacy, ...rest } = t;
+    return { ...(rest as Record<string, unknown>), labelIds } as unknown as Task;
+  });
+
+  const activeLabelIds = Array.isArray(s.activeLabelIds)
+    ? (s.activeLabelIds as string[])
+    : (Array.isArray(s.activeLabels) ? (s.activeLabels as string[]) : [])
+        .map((k) => LABEL_KIND_TO_ID[k])
+        .filter(Boolean);
+
+  return {
+    areas: areas.length ? areas : defaultAreas,
+    labels: labels.length ? labels : defaultLabels,
+    tasks,
+    milestones,
+    activeAreaId:
+      typeof s.activeAreaId === "string" ? (s.activeAreaId as AreaFilter) : "all",
+    activeLabelIds,
+  };
+}
+
 export interface PlannerState extends PersistedSlice {
   hasHydrated: boolean;
   syncStatus: SyncStatus;
@@ -115,12 +168,27 @@ export const usePlanner = create<PlannerState>()(
       setHasHydrated: (v) => set({ hasHydrated: v }),
       setSyncStatus: (status) => set({ syncStatus: status }),
       replaceAll: (snapshot) =>
-        set({
-          areas: snapshot.areas,
-          labels: snapshot.labels,
-          tasks: snapshot.tasks,
-          milestones: snapshot.milestones,
-        }),
+        set((s) => ({
+          // Never let a malformed/empty remote snapshot wipe areas or labels,
+          // and guarantee every task has a labelIds array.
+          areas:
+            Array.isArray(snapshot.areas) && snapshot.areas.length
+              ? snapshot.areas
+              : s.areas,
+          labels:
+            Array.isArray(snapshot.labels) && snapshot.labels.length
+              ? snapshot.labels
+              : s.labels,
+          milestones: Array.isArray(snapshot.milestones)
+            ? snapshot.milestones
+            : s.milestones,
+          tasks: Array.isArray(snapshot.tasks)
+            ? snapshot.tasks.map((t) => ({
+                ...t,
+                labelIds: Array.isArray(t.labelIds) ? t.labelIds : [],
+              }))
+            : s.tasks,
+        })),
       setActiveArea: (id) => set({ activeAreaId: id }),
       toggleLabelFilter: (labelId) =>
         set((s) => ({
@@ -283,8 +351,9 @@ export const usePlanner = create<PlannerState>()(
     }),
     {
       name: "deadline-task-manager.v1",
-      version: 1,
+      version: 2,
       storage,
+      migrate: (persisted) => migrateState(persisted) as unknown as PlannerState,
       partialize: (s): PersistedSlice => ({
         areas: s.areas,
         labels: s.labels,
