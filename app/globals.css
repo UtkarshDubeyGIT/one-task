@@ -28,34 +28,42 @@
     --input: 240 6% 90%;
     --ring: 243 75% 59%;
     --radius: 0.625rem;
+    /* one task logo iridescence — used for glow / gradient-border accents */
+    --glow-1: #c656a5;
+    --glow-2: #2a2d91;
+    --glow-3: #e2f1f1;
   }
 
   .dark {
-    /* Near-black, faintly blue — Linear-style canvas */
-    --background: 240 8% 6%;
-    --foreground: 240 12% 92%;
-    --card: 240 8% 8.5%;
-    --card-foreground: 240 12% 92%;
-    --popover: 240 9% 7%;
-    --popover-foreground: 240 12% 92%;
-    /* Signature indigo/violet accent */
-    --primary: 245 80% 70%;
-    --primary-foreground: 240 30% 8%;
-    --secondary: 240 6% 14%;
-    --secondary-foreground: 240 12% 92%;
-    --muted: 240 6% 13%;
-    --muted-foreground: 240 6% 56%;
-    --accent: 240 6% 16%;
-    --accent-foreground: 240 12% 96%;
+    /* #0f0f10 — near-black mono canvas */
+    --background: 240 3% 6%;
+    --foreground: 0 0% 96%;
+    --card: 240 4% 8%;
+    --card-foreground: 0 0% 96%;
+    --popover: 240 4% 8%;
+    --popover-foreground: 0 0% 96%;
+    /* Primary = white. Color comes only from the logo-glow accents. */
+    --primary: 0 0% 100%;
+    --primary-foreground: 240 6% 8%;
+    --secondary: 240 5% 14%;
+    --secondary-foreground: 0 0% 96%;
+    --muted: 240 5% 13%;
+    --muted-foreground: 240 5% 60%;
+    --accent: 240 5% 15%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 70% 55%;
     --destructive-foreground: 0 0% 98%;
     --success: 152 55% 48%;
     --success-foreground: 152 60% 8%;
     --warning: 38 92% 58%;
     --warning-foreground: 38 92% 10%;
-    --border: 240 6% 17%;
-    --input: 240 6% 18%;
-    --ring: 245 80% 70%;
+    --border: 240 5% 16%;
+    --input: 240 5% 18%;
+    --ring: 0 0% 72%;
+    /* one task logo iridescence — used for glow / gradient-border accents */
+    --glow-1: #c656a5;
+    --glow-2: #2a2d91;
+    --glow-3: #e2f1f1;
   }
 }
 
@@ -110,6 +118,66 @@
   }
   .text-balance {
     text-wrap: balance;
+  }
+}
+
+@layer components {
+  /*
+   * Iridescent gradient border — a double-background trick: the inner layer is
+   * clipped to the padding box, the gradient to the border box, so only the
+   * 1px frame shows the logo's pink→indigo→ice sweep. Used on the featured card
+   * and anything that wants the "glowing logo edge" treatment.
+   */
+  .iridescent-border {
+    border: 1px solid transparent;
+    background:
+      linear-gradient(hsl(var(--card)), hsl(var(--card))) padding-box,
+      linear-gradient(
+          135deg,
+          var(--glow-1),
+          var(--glow-2) 45%,
+          var(--glow-3)
+        )
+        border-box;
+  }
+
+  /*
+   * White button with the same iridescent frame + a soft colored glow. The fill
+   * is a near-white vertical gradient (padding-box); the border is the logo
+   * sweep (border-box). Hover lifts the glow; active settles it.
+   */
+  .btn-glow {
+    color: #18181b;
+    border: 1px solid transparent;
+    background:
+      linear-gradient(180deg, #ffffff, #f1f1f4) padding-box,
+      linear-gradient(125deg, var(--glow-1), var(--glow-2) 50%, var(--glow-3))
+        border-box;
+    box-shadow:
+      0 0 0 0.5px rgba(255, 255, 255, 0.04),
+      0 1px 2px rgba(0, 0, 0, 0.4),
+      0 0 14px -4px var(--glow-1),
+      0 0 20px -8px var(--glow-2);
+    transition:
+      box-shadow 0.2s ease,
+      transform 0.12s ease,
+      filter 0.2s ease;
+  }
+  .btn-glow:hover {
+    filter: brightness(1.02);
+    box-shadow:
+      0 0 0 0.5px rgba(255, 255, 255, 0.06),
+      0 1px 2px rgba(0, 0, 0, 0.4),
+      0 0 20px -3px var(--glow-1),
+      0 0 28px -6px var(--glow-2),
+      0 0 32px -10px var(--glow-3);
+  }
+  .btn-glow:active {
+    transform: translateY(0.5px);
+    box-shadow:
+      0 0 0 0.5px rgba(255, 255, 255, 0.04),
+      0 1px 1px rgba(0, 0, 0, 0.4),
+      0 0 12px -4px var(--glow-1);
   }
 }
 

@@ -94,12 +94,14 @@ function FeaturedNext({
   clear: boolean;
 }) {
   return (
-    <Card className="relative overflow-hidden border-primary/30 bg-gradient-to-br from-primary/[0.07] via-card to-card">
-      <div className="pointer-events-none absolute -right-16 -top-16 size-48 rounded-full bg-primary/10 blur-3xl" />
+    <Card className="iridescent-border relative overflow-hidden">
+      {/* logo-glow blobs — pink + indigo wash bleeding in from the corner */}
+      <div className="pointer-events-none absolute -right-16 -top-16 size-48 rounded-full bg-[#c656a5]/14 blur-3xl" />
+      <div className="pointer-events-none absolute -right-24 top-10 size-44 rounded-full bg-[#2a2d91]/14 blur-3xl" />
       <div className="relative p-5">
         <div className="mb-3 flex items-center gap-2">
-          <Sparkles className="size-4 text-primary" />
-          <span className="font-pixel-square text-xs uppercase tracking-wide text-primary">
+          <Sparkles className="size-4 text-[#d979bd]" />
+          <span className="font-pixel-square text-xs uppercase tracking-wide text-[#d979bd]">
             {clear ? "Today's clear — up next" : "Up next"}
           </span>
         </div>
