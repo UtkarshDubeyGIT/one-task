@@ -69,7 +69,7 @@ export function TimelineView() {
     <div className="flex flex-col gap-4 duration-300 animate-in fade-in-0">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Timeline</h1>
+          <h1 className="font-pixel-square text-xl tracking-tight">Timeline</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">
             {label}
             <span className="ml-2 hidden text-muted-foreground/60 sm:inline">
@@ -85,7 +85,7 @@ export function TimelineView() {
                 type="button"
                 onClick={() => setMode(m)}
                 className={cn(
-                  "rounded px-2.5 py-1 text-xs capitalize transition-colors",
+                  "rounded px-2.5 py-1 font-pixel-square text-xs capitalize transition-colors",
                   mode === m
                     ? "bg-accent text-foreground"
                     : "text-muted-foreground hover:text-foreground",

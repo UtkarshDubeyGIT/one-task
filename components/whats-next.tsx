@@ -99,7 +99,7 @@ function FeaturedNext({
       <div className="relative p-5">
         <div className="mb-3 flex items-center gap-2">
           <Sparkles className="size-4 text-primary" />
-          <span className="text-xs font-medium uppercase tracking-wide text-primary">
+          <span className="font-pixel-square text-xs uppercase tracking-wide text-primary">
             {clear ? "Today's clear — up next" : "Up next"}
           </span>
         </div>
@@ -193,7 +193,9 @@ export function WhatsNext() {
     <div className="mx-auto flex max-w-3xl flex-col gap-6 duration-300 animate-in fade-in-0">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{greeting()}</h1>
+          <h1 className="font-pixel-square text-2xl tracking-tight">
+            {greeting()}
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">{formatFull(today)}</p>
         </div>
         <Button onClick={() => openCreate()}>

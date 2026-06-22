@@ -122,7 +122,7 @@ function Shell({ children }: { children: React.ReactNode }) {
           >
             <Menu />
           </Button>
-          <h1 className="text-sm font-semibold">{title}</h1>
+          <h1 className="font-pixel-square text-sm tracking-wide">{title}</h1>
           <div className="ml-auto flex items-center gap-2.5">
             <span className="hidden items-center gap-1.5 text-xs text-muted-foreground sm:flex">
               Quick add <Kbd size="sm">N</Kbd>

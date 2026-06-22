@@ -87,9 +87,9 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
               href={item.href}
               onClick={onNavigate}
               className={cn(
-                "flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition-colors",
+                "flex items-center gap-2.5 rounded-md px-2.5 py-2 font-pixel-square text-[13px] tracking-wide transition-colors",
                 active
-                  ? "bg-accent font-medium text-foreground"
+                  ? "bg-accent text-foreground"
                   : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
               )}
             >
@@ -101,7 +101,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
 
       <div className="mt-3 px-2">
-        <div className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
+        <div className="mb-1.5 font-pixel-square text-[11px] uppercase tracking-wide text-muted-foreground/70">
           Areas
         </div>
         <div className="flex flex-col gap-0.5">
@@ -155,7 +155,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       </div>
 
       <div className="mt-3 px-2">
-        <div className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground/70">
+        <div className="mb-1.5 font-pixel-square text-[11px] uppercase tracking-wide text-muted-foreground/70">
           Labels
         </div>
         <div className="flex flex-wrap gap-1.5 px-0.5">

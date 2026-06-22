@@ -185,7 +185,9 @@ export function WeeklyPlanner() {
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-5 duration-300 animate-in fade-in-0">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Weekly planning</h1>
+        <h1 className="font-pixel-square text-xl tracking-tight">
+          Weekly planning
+        </h1>
         <p className="mt-0.5 text-sm text-muted-foreground">
           Your Sunday ritual: look at the week&apos;s deadlines, break each into
           daily milestones, assign them to days.

@@ -129,7 +129,7 @@ export function KanbanBoard() {
   return (
     <div className="flex flex-col gap-4 duration-300 animate-in fade-in-0">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Board</h1>
+        <h1 className="font-pixel-square text-xl tracking-tight">Board</h1>
         <p className="mt-0.5 text-sm text-muted-foreground">
           Milestones bucketed by deadline — drag a card to reschedule it.
         </p>
