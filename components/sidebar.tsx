@@ -41,18 +41,27 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 
   const [manageOpen, setManageOpen] = React.useState(false);
 
-  const pendingByArea = React.useMemo(() => {
-    const taskArea = new Map(tasks.map((t) => [t.id, t.areaId]));
-    const counts = new Map<string, number>();
+  // Live count of OPEN tasks per area. A task is "open" unless it has
+  // milestones and they're all done. Recomputes whenever tasks/milestones change.
+  const { openByArea, totalOpen } = React.useMemo(() => {
+    const progress = new Map<string, { total: number; done: number }>();
     for (const m of milestones) {
-      if (m.done) continue;
-      const aid = taskArea.get(m.taskId);
-      if (!aid) continue;
-      counts.set(aid, (counts.get(aid) ?? 0) + 1);
+      const e = progress.get(m.taskId) ?? { total: 0, done: 0 };
+      e.total += 1;
+      if (m.done) e.done += 1;
+      progress.set(m.taskId, e);
     }
-    return counts;
+    const byArea = new Map<string, number>();
+    let total = 0;
+    for (const t of tasks) {
+      const p = progress.get(t.id);
+      const complete = !!p && p.total > 0 && p.done === p.total;
+      if (complete) continue;
+      byArea.set(t.areaId, (byArea.get(t.areaId) ?? 0) + 1);
+      total += 1;
+    }
+    return { openByArea: byArea, totalOpen: total };
   }, [tasks, milestones]);
-  const totalPending = milestones.filter((m) => !m.done).length;
 
   return (
     <div className="flex h-full flex-col gap-1 p-3">
@@ -110,9 +119,11 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             )}
           >
             <span>All areas</span>
-            <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
-              {totalPending}
-            </span>
+            {totalOpen > 0 && (
+              <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
+                {totalOpen}
+              </span>
+            )}
           </button>
           {areas.map((a) => (
             <button
@@ -133,9 +144,11 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                 <AreaDot color={a.color} />
                 <span className="truncate">{a.name}</span>
               </span>
-              <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
-                {pendingByArea.get(a.id) ?? 0}
-              </span>
+              {(openByArea.get(a.id) ?? 0) > 0 && (
+                <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
+                  {openByArea.get(a.id)}
+                </span>
+              )}
             </button>
           ))}
         </div>
