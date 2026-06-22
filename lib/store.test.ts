@@ -201,6 +201,11 @@ describe("migrateState (persistence migration)", () => {
     expect(out.activeLabelIds).toEqual(["label_feat"]);
     // labels were missing → defaulted
     expect(out.labels).toHaveLength(3);
+    // both tasks had no milestones → each backfilled with one on its deadline
+    expect(out.milestones).toHaveLength(2);
+    const m1 = out.milestones.find((m) => m.taskId === "t1");
+    expect(m1?.title).toBe("X");
+    expect(m1?.date).toBe("2026-06-21");
   });
 
   it("returns sane defaults for empty / garbage input", () => {

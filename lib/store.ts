@@ -81,6 +81,24 @@ export function migrateState(persisted: unknown): PersistedSlice {
     return { ...(rest as Record<string, unknown>), labelIds } as unknown as Task;
   });
 
+  // Backfill: any task with no milestones gets one on its deadline, so every
+  // todo stays visible in the views (which render milestones, not tasks).
+  const milestoneTaskIds = new Set(milestones.map((m) => m.taskId));
+  const milestonesWithBackfill: Milestone[] = [...milestones];
+  for (const t of tasks) {
+    if (!milestoneTaskIds.has(t.id)) {
+      milestonesWithBackfill.push({
+        id: uid("m"),
+        taskId: t.id,
+        title: t.title,
+        date: t.deadline,
+        done: false,
+        order: 0,
+        createdAt: t.createdAt ?? new Date().toISOString(),
+      });
+    }
+  }
+
   const activeLabelIds = Array.isArray(s.activeLabelIds)
     ? (s.activeLabelIds as string[])
     : (Array.isArray(s.activeLabels) ? (s.activeLabels as string[]) : [])
@@ -91,7 +109,7 @@ export function migrateState(persisted: unknown): PersistedSlice {
     areas: areas.length ? areas : defaultAreas,
     labels: labels.length ? labels : defaultLabels,
     tasks,
-    milestones,
+    milestones: milestonesWithBackfill,
     activeAreaId:
       typeof s.activeAreaId === "string" ? (s.activeAreaId as AreaFilter) : "all",
     activeLabelIds,
@@ -351,7 +369,7 @@ export const usePlanner = create<PlannerState>()(
     }),
     {
       name: "deadline-task-manager.v1",
-      version: 2,
+      version: 3,
       storage,
       migrate: (persisted) => migrateState(persisted) as unknown as PlannerState,
       partialize: (s): PersistedSlice => ({
